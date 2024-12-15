@@ -3,6 +3,14 @@ import mongoose, { Types } from "mongoose";
 const Schema =mongoose.Schema;
 const ObjectId=Schema.ObjectId;
 
+// mongoose connection 
+try {
+     mongoose.connect("mongodb+srv://cob56dhammabhushanwaghmare:omtNTxv1bOtWqTmD@cluster0.jtu0y.mongodb.net/second_brain");
+     console.log("data base connrction  succesfull");
+} catch (error) {
+    console.log("error in connection to data base")
+}
+
 const User= new Schema({
     
     username:{
@@ -65,14 +73,15 @@ const Link= new Schema({
 })
 
 
-const UserModel=mongoose.model('users',User);
-const ContentModel=mongoose.model('contents',Content);
-const TagModel= mongoose.model("tags",Tag);
-const LinkModel=mongoose.model("links",Link);
-
+export const UserModel=mongoose.model('users',User);
+export const ContentModel=mongoose.model('contents',Content);
+export const TagModel= mongoose.model("tags",Tag);
+export const LinkModel=mongoose.model("links",Link);
+/*
 module.exports={
     UserModel,
     ContentModel,
     TagModel,
     LinkModel
 }
+*/
