@@ -23,13 +23,12 @@ const User= new Schema({
     password:{
         type:String,
         require:true,
-        minLength:[8,"passwaord should be minimum should be 8 characters"],
-        maxLength:[20,"maximum length od password should be w0 character"]
+        
     }
 
 })
 
-const contentType=['image,post,video']// content should be incerase
+const contentType=['image','post','video']// content should be incerase
 
 const Content =new Schema({
     link:{
@@ -44,13 +43,13 @@ const Content =new Schema({
         type:String,
         require:true
     },
-    tag:{
-        type:Types.ObjectId,
+    tag:[{
+        type:mongoose.Types.ObjectId,
          ref:'Tag',
-    },
+    }],
 
     userId:{
-        type:Types.ObjectId,
+        type:mongoose.Types.ObjectId,
         ref:'User',
         }
         
@@ -73,15 +72,8 @@ const Link= new Schema({
 })
 
 
-export const UserModel=mongoose.model('users',User);
-export const ContentModel=mongoose.model('contents',Content);
-export const TagModel= mongoose.model("tags",Tag);
-export const LinkModel=mongoose.model("links",Link);
-/*
-module.exports={
-    UserModel,
-    ContentModel,
-    TagModel,
-    LinkModel
-}
-*/
+export const UserModel = mongoose.model('User', User);
+export const ContentModel = mongoose.model('Content', Content);
+export const TagModel = mongoose.model("Tag", Tag);
+export const LinkModel = mongoose.model("Link", Link);
+ 
