@@ -2,9 +2,12 @@ import express from "express";
 import jwt from 'jsonwebtoken'
 import bcrypt, { hash } from 'bcrypt'
 import {z} from 'zod'
-import { ContentModel, UserModel } from "./db";
+import { ContentModel, LinkModel, UserModel } from "./db";
 import mongoose from "mongoose";
 import  {userMiddleware}  from "./middelware";
+import { hashLink } from "./utils";
+import cors from 'cors';
+
 
 //credential  
 const saltRound=5;
@@ -12,6 +15,7 @@ const JWT_PASSWORD="iamgonabehokage";
 
 const app=express();
 app.use(express.json());
+app.use(cors());
 
 app.post("/api/v1/signup",async(req,res):Promise<any>=>{
 
@@ -74,29 +78,31 @@ app.post("/api/v1/signin",async(req,res):Promise<any>=>{
     // input parameters
     const InputUsername=req.body.username;
     const InputPassword= req.body.password;
+ 
+    console.log(InputUsername)
     //zod validation 
-    const UserSchema=z.object({
-        username:z.string(),
-        password:z.string()
-    })
-
-    // validate the input
-
-     const parsUser=UserSchema.safeParse({
-        username:InputUsername,
-        password:InputPassword
+     const UserSchema=z.object({
+         username:z.string(),
+         password:z.string()
      })
-
-     // cheching if valid or not
-
-     if(!parsUser.success){
-        console.log("validation error",parsUser.error.issues);
-
-        return res.status(400).json({
-            error:parsUser.error.issues
-        })
-     }
-
+ 
+     // validate the input
+ 
+      const parsUser=UserSchema.safeParse({
+         username:InputUsername,
+         password:InputPassword
+      })
+ 
+      // cheching if valid or not
+ 
+      if(!parsUser.success){
+         console.log("validation error",parsUser.error.issues);
+ 
+         return res.status(400).json({
+             error:parsUser.error.issues
+         })
+      }
+ 
        // find user in the data base
 
     const findUserDatabase= await UserModel.findOne({
@@ -104,12 +110,17 @@ app.post("/api/v1/signin",async(req,res):Promise<any>=>{
     })
    
     if (findUserDatabase === null) {
-        throw new Error('User not found');
+       return res.status(403).json({
+            message:"use not found"
+        })
     }
     
     // Ensure InputPassword is a string
     if (typeof InputPassword !== 'string') {
-        throw new Error('Invalid password input');
+      
+        res.status(403).json({
+            message:"Invalid password input"
+        })
     }
     
     // checking the password
@@ -141,7 +152,7 @@ app.post("/api/v1/content", userMiddleware,async(req,res)=> {
 
 
   //adding content in the data model
-
+        console.log("/api/v1/content hi")
  await ContentModel.create({
             link: InputLink,
             type: InputType, 
@@ -186,13 +197,86 @@ app.delete("/api/v1/content",userMiddleware,async(req,res)=>{
     })
 
 })
+//@ts-ignore
+app.post("/api/v1/brain/share",userMiddleware,async(req,res)=>{
 
-app.post("/api/v1/brain/share",(req,res)=>{
+        const share=req.body.share;
+        //@ts-ignore
+        const userId=req.userId
+        const hashTempt = share ? hashLink(20) : null;
 
+        if(share){
+        await LinkModel.create({
+                hash:hashTempt,
+                userId:userId,
+            })
+
+            res.json({
+                link:`/api/v1/brain/${hashTempt}`,
+                message :"update link is sharable "
+            })
+        }else{
+         const l=  await LinkModel.findOneAndDelete({
+            userId:userId,
+            })
+            res.json({
+            L:l,
+                message :"update link is deactivate "
+            })
+        }
+
+     
 })
 
-app.get(" /api/v1/brain/:shareLink",(req,res)=>{
+app.get("/api/v1/brain/:shareLink",async(req,res):Promise<any>=>{
+  
+        const hash= req.params.shareLink;
+        console.log(hash);
+        // find the link in the Link model
+
+
+        if(hash){
+         const Link= await LinkModel.findOne({
+                hash:hash
+            })
+            console.log("LINK DONE")
+            console.log(Link)
+            // if link is not valid
+            if(!Link){
+                return ( res.status(404).json({
+                        error:"Invalid link"
+            }))
         
+            }
+        
+        //find the content of the user we have found
+        const Content=await ContentModel.findOne({
+            userId:Link.userId
+        })
+        console.log("content done")
+        console.log(Content)
+        // find the infromation about the user
+
+        const user=await UserModel.findOne({
+            _id:Link.userId
+        })
+        console.log("userdone")
+        console.log(user)
+        // return the sheard link content 
+
+        res.json({
+            username:user?.username,
+            linkContent:Content
+        })
+
+
+        }else{
+            res.status(411).json({
+                message:"Pleas provide the link"
+            })
+        }
+
+
 });
 
 

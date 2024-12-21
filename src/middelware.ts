@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken'
 const JWT_PASSWORD="iamgonabehokage";
 
 export const userMiddleware = (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers['token'] as string | undefined; // Cast token as string or undefined
+    const token = req.headers["token"] as string | undefined; // Cast token as string or undefined
 
     if (!token) {
         return res.status(400).json({ message: 'Token is required' });

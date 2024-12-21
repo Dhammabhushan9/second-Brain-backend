@@ -1,7 +1,6 @@
-import mongoose, { Types } from "mongoose";
-
-const Schema =mongoose.Schema;
-const ObjectId=Schema.ObjectId;
+import mongoose from "mongoose";
+const { Schema, Types } = mongoose;
+ 
 
 // mongoose connection 
 try {
@@ -28,7 +27,7 @@ const User= new Schema({
 
 })
 
-const contentType=['image','post','video']// content should be incerase
+const contentType=['Document','Twitter','Video','Link'] 
 
 const Content =new Schema({
     link:{
@@ -70,7 +69,7 @@ const Link= new Schema({
         ref:'User'
     } 
 })
-
+  
 
 export const UserModel = mongoose.model('User', User);
 export const ContentModel = mongoose.model('Content', Content);
